@@ -1,0 +1,15 @@
+unit Register.Cliente;
+
+interface
+
+uses
+  Controller.GenericCrud;
+
+type
+  TRegisterCliente = class(TBaseEntity)
+  private
+  end;
+
+implementation
+
+end.

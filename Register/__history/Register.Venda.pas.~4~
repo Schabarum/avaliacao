@@ -1,0 +1,19 @@
+unit Register.Venda;
+
+interface
+
+uses
+  Controller.GenericCrud;
+
+type
+  TRegisterVenda = class(TBaseEntity)
+  private
+
+  public
+    property ID_VENDA: Integer;
+    property VL_TOTAL: Float;
+  end;
+
+implementation
+
+end.

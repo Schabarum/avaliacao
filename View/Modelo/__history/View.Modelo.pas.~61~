@@ -1,0 +1,196 @@
+unit View.Modelo;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, Controller.Connection, Controller.GenericCrud,
+  Register.Modelo,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, View.RegisterWrite, Vcl.StdCtrls,
+  Vcl.ExtCtrls, Data.DB, Vcl.Grids, Vcl.DBGrids, Datasnap.DBClient, Vcl.Mask,
+  Vcl.DBCtrls;
+
+type
+  TModelo = class(TViewRegisterWrite)
+    grdModelo: TDBGrid;
+    dsModelo: TDataSource;
+    cdsModelo: TClientDataSet;
+    edtModelo: TDBEdit;
+    edtDescricao: TDBEdit;
+    edtLancamento: TDBEdit;
+    edtMarca: TDBEdit;
+    lblModelo: TLabel;
+    lblDescricao: TLabel;
+    lblLancamento: TLabel;
+    lblMarca: TLabel;
+    btnInserirModelo: TButton;
+    procedure FormShow(Sender: TObject);
+    procedure btnInserirModeloClick(Sender: TObject);
+  private
+    procedure CarregarGrid;
+  public
+    class function ShowForm: Boolean;
+  protected
+    procedure InserirRegistro; override;
+    procedure EditarRegistro; override;
+    procedure ExcluirRegistro; override;
+  end;
+
+var
+  Modelo: TModelo;
+
+implementation
+
+uses
+  System.Generics.Collections;
+
+{$R *.dfm}
+{ TModelo }
+
+procedure TModelo.EditarRegistro;
+var
+  vModeloGeneric: TControllerGenericCrud<TRegisterModelo>;
+  vModelo: TRegisterModelo;
+begin
+  inherited;
+  vModeloGeneric := TControllerGenericCrud<TRegisterModelo>.Create
+    (TConnection.New.SetConnection, 'MODELO');
+
+  vModelo := TRegisterModelo.Create;
+  try
+    vModelo.ID_MODELO := StrToInt(edtModelo.Text);
+    vModelo.DESCRICAO := edtDescricao.Text;
+    vModelo.LANCAMENTO := StrToDate(edtLancamento.Text);
+    vModelo.ID_MARCA := StrToInt(edtMarca.Text);
+    vModeloGeneric.Update(vModelo);
+
+    CarregarGrid;
+  finally
+    vModelo.Free;
+    vModeloGeneric.Free;
+  end;
+end;
+
+procedure TModelo.ExcluirRegistro;
+var
+  vModeloGeneric: TControllerGenericCrud<TRegisterModelo>;
+  vModelo: TRegisterModelo;
+begin
+  inherited;
+  vModeloGeneric := TControllerGenericCrud<TRegisterModelo>.Create
+    (TConnection.New.SetConnection, 'MODELO');
+
+  vModelo := TRegisterModelo.Create;
+  try
+    vModelo.ID_MODELO := StrToInt(edtModelo.Text);
+    vModelo.DESCRICAO := edtDescricao.Text;
+    vModelo.LANCAMENTO := StrToDate(edtLancamento.Text);
+    vModelo.ID_MARCA := StrToInt(edtMarca.Text);
+    vModeloGeneric.Delete(vModelo);
+
+    CarregarGrid;
+  finally
+    vModelo.Free;
+    vModeloGeneric.Free;
+  end;
+end;
+
+procedure TModelo.FormShow(Sender: TObject);
+begin
+  inherited;
+  CarregarGrid;
+end;
+
+procedure TModelo.InserirRegistro;
+var
+  vModeloGeneric: TControllerGenericCrud<TRegisterModelo>;
+  vModelo: TRegisterModelo;
+begin
+  inherited;
+  vModeloGeneric := TControllerGenericCrud<TRegisterModelo>.Create
+    (TConnection.New.SetConnection, 'MODELO');
+
+  vModelo := TRegisterModelo.Create;
+  try
+    vModelo.ID_MODELO := StrToInt(edtModelo.Text);
+    vModelo.DESCRICAO := edtDescricao.Text;
+    vModelo.LANCAMENTO := StrToDate(edtLancamento.Text);
+    vModelo.ID_MARCA := StrToInt(edtMarca.Text);
+    vModeloGeneric.Insert(vModelo);
+
+    CarregarGrid;
+  finally
+    vModelo.Free;
+    vModeloGeneric.Free;
+  end;
+end;
+
+procedure TModelo.btnInserirModeloClick(Sender: TObject);
+const
+  cSQL =
+    'INSERT INTO MODELO (ID_MODELO, DESCRICAO, LANCAMENTO, ID_MARCA) ' +
+    ' VALUES (%0:d, %1:s, %2:s, %3:d)';
+begin
+  inherited;
+    TConnection.New
+    .InserirDadosBD(Format(cSQL, [100, QuotedStr('Montana'), QuotedStr('2023-01-01'), 3]))
+    .InserirDadosBD(Format(cSQL, [101, QuotedStr('Maverick'), QuotedStr('2022-01-01'), 6]))
+    .InserirDadosBD(Format(cSQL, [102, QuotedStr('Corolla Cross Hybrid'), QuotedStr('2022-01-01'), 7]))
+    .InserirDadosBD(Format(cSQL, [103, QuotedStr('BMW iX'), QuotedStr('2022-01-01'), 14]))
+    .InserirDadosBD(Format(cSQL, [104, QuotedStr('ID. Buzz'), QuotedStr('2022-01-01'), 4]));
+end;
+
+procedure TModelo.CarregarGrid;
+var
+  vModeloGeneric: TControllerGenericCrud<TRegisterModelo>;
+  vModelo: TRegisterModelo;
+  vModelos: TObjectList<TRegisterModelo>;
+begin
+  inherited;
+  vModeloGeneric := TControllerGenericCrud<TRegisterModelo>.Create
+    (TConnection.New.SetConnection, 'MODELO');
+
+  vModelos := TObjectList<TRegisterModelo>.Create;
+  try
+    vModelos := vModeloGeneric.ListarTodos;
+
+    cdsModelo.Close;
+    cdsModelo.FieldDefs.Clear;
+    cdsModelo.FieldDefs.Add('ID_MODELO', ftInteger);
+    cdsModelo.FieldDefs.Add('DESCRICAO', ftString, 50);
+    cdsModelo.FieldDefs.Add('LANCAMENTO', ftDateTime);
+    cdsModelo.FieldDefs.Add('ID_MARCA', ftInteger);
+    cdsModelo.CreateDataSet;
+
+    for vModelo in vModelos do
+    begin
+      cdsModelo.Append;
+      cdsModelo.FieldByName('ID_MODELO').AsInteger := vModelo.ID_MODELO;
+      cdsModelo.FieldByName('DESCRICAO').AsString := vModelo.DESCRICAO;
+      cdsModelo.FieldByName('LANCAMENTO').AsDateTime := vModelo.LANCAMENTO;
+      cdsModelo.FieldByName('ID_MARCA').AsInteger := vModelo.ID_MARCA;
+      cdsModelo.Post;
+    end;
+
+    cdsModelo.First;
+  finally
+    vModelo.Free;
+    vModeloGeneric.Free;
+  end;
+end;
+
+class function TModelo.ShowForm: Boolean;
+var
+  vForm: TModelo;
+begin
+  Result := False;
+  vForm := TModelo.Create(Application);
+  try
+    if vForm.ShowModal = mrOk then
+      Result := True;
+  finally
+    vForm.Free;
+  end;
+end;
+
+end.

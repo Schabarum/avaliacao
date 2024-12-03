@@ -1,0 +1,81 @@
+unit View.Principal;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, View.Consulta,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Menus,
+  FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Error, FireDAC.UI.Intf,
+  FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async,
+  FireDAC.Phys, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client,
+  FireDAC.Phys.MySQL, FireDAC.Phys.MySQLDef, View.Marca, View.Venda,
+  View.Modelo, View.Cliente;
+
+type
+  TunPrincipal = class(TForm)
+    pnlBase: TPanel;
+    MainMenu1: TMainMenu;
+    miCadastro: TMenuItem;
+    miMovimentao: TMenuItem;
+    miConsulta: TMenuItem;
+    miMarca: TMenuItem;
+    miVenda: TMenuItem;
+    miConsultas: TMenuItem;
+    miModelo: TMenuItem;
+    miCliente: TMenuItem;
+    procedure miMarcaClick(Sender: TObject);
+    procedure miVendaClick(Sender: TObject);
+    procedure miConsultasClick(Sender: TObject);
+    procedure miModeloClick(Sender: TObject);
+    procedure miClienteClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  unPrincipal: TunPrincipal;
+
+implementation
+
+{$R *.dfm}
+
+procedure TunPrincipal.FormShow(Sender: TObject);
+begin
+  ShowMessage(IncludeTrailingPathDelimiter(ExtractFilePath(ExtractFilePath(CaminhoRaiz))) + 'libs');
+end;
+
+procedure TunPrincipal.miClienteClick(Sender: TObject);
+begin
+  if not TCliente.ShowForm then
+    ShowMessage('Não foi possível abrir a tela de cadastro dos clientes');
+end;
+
+procedure TunPrincipal.miConsultasClick(Sender: TObject);
+begin
+  if not TViewConsulta.ShowForm then
+    ShowMessage('Não foi possível abrir a tela de consultas');
+end;
+
+procedure TunPrincipal.miMarcaClick(Sender: TObject);
+begin
+  if not TMarca.ShowForm then
+    ShowMessage('Não foi possível abrir a tela de cadastro das marcas');
+end;
+
+procedure TunPrincipal.miModeloClick(Sender: TObject);
+begin
+  if not TModelo.ShowForm then
+    ShowMessage('Não foi possível abrir a tela de cadastro dos modelos');
+end;
+
+procedure TunPrincipal.miVendaClick(Sender: TObject);
+begin
+  if not TVenda.ShowForm then
+    ShowMessage('Não foi possível abrir a tela de cadastro das vendas');
+end;
+
+end.

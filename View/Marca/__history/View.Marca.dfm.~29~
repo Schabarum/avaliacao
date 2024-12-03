@@ -1,0 +1,82 @@
+inherited Marca: TMarca
+  Caption = 'Cadastro de marca'
+  StyleElements = [seFont, seClient, seBorder]
+  OnClose = FormClose
+  OnShow = FormShow
+  TextHeight = 15
+  inherited pnlBackGround: TPanel
+    StyleElements = [seFont, seClient, seBorder]
+    ExplicitTop = 60
+    ExplicitHeight = 383
+    object lblCodigo: TLabel
+      Left = 16
+      Top = 11
+      Width = 39
+      Height = 15
+      Caption = 'C'#243'digo'
+    end
+    object lblDescricao: TLabel
+      Left = 143
+      Top = 11
+      Width = 51
+      Height = 15
+      Caption = 'Descri'#231#227'o'
+    end
+    object grdMarca: TDBGrid
+      Left = 0
+      Top = 72
+      Width = 624
+      Height = 311
+      Align = alBottom
+      DataSource = dsMarca
+      TabOrder = 0
+      TitleFont.Charset = DEFAULT_CHARSET
+      TitleFont.Color = clWindowText
+      TitleFont.Height = -12
+      TitleFont.Name = 'Segoe UI'
+      TitleFont.Style = []
+    end
+    object edtCodigo: TDBEdit
+      Left = 16
+      Top = 32
+      Width = 121
+      Height = 23
+      TabOrder = 1
+    end
+    object edtMarca: TDBEdit
+      Left = 143
+      Top = 32
+      Width = 458
+      Height = 23
+      TabOrder = 2
+    end
+  end
+  inherited pnlToolbar: TPanel
+    StyleElements = [seFont, seClient, seBorder]
+    inherited btnInserir: TButton
+      ExplicitLeft = 6
+      ExplicitTop = 4
+      ExplicitHeight = 50
+    end
+    inherited btnEditar: TButton
+      ExplicitLeft = 91
+      ExplicitTop = 4
+      ExplicitHeight = 50
+    end
+    inherited btnExcluir: TButton
+      ExplicitLeft = 176
+      ExplicitTop = 4
+    end
+  end
+  object dsMarca: TDataSource
+    DataSet = cdsMarca
+    Left = 440
+    Top = 266
+  end
+  object cdsMarca: TClientDataSet
+    Aggregates = <>
+    Params = <>
+    Left = 384
+    Top = 266
+  end
+end

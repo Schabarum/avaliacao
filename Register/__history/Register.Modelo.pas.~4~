@@ -1,0 +1,13 @@
+unit Register.Modelo;
+
+interface
+
+uses
+  Controller.GenericCrud;
+
+type
+  TRegisterMarca = class(TBaseEntity)
+
+implementation
+
+end.

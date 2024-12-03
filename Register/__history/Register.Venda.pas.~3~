@@ -1,0 +1,15 @@
+unit Register.Venda;
+
+interface
+
+uses
+  Controller.GenericCrud;
+
+type
+  TRegisterVenda = class(TBaseEntity)
+
+  end;
+
+implementation
+
+end.

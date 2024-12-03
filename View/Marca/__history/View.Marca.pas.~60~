@@ -1,0 +1,172 @@
+unit View.Marca;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, Controller.Connection, Controller.GenericCrud,
+  Register.Marca, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, View.RegisterWrite,
+  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Grids, Data.DB, Vcl.DBGrids,
+  FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
+  FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
+  FireDAC.Stan.Async, FireDAC.DApt, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
+  Datasnap.DBClient, Vcl.Mask, Vcl.DBCtrls;
+
+type
+  TMarca = class(TViewRegisterWrite)
+    lblCodigo: TLabel;
+    lblDescricao: TLabel;
+    grdMarca: TDBGrid;
+    dsMarca: TDataSource;
+    cdsMarca: TClientDataSet;
+    edtCodigo: TDBEdit;
+    edtMarca: TDBEdit;
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormShow(Sender: TObject);
+    procedure btnEditarClick(Sender: TObject);
+  private
+    procedure CarregarGrid;
+  public
+    class function ShowForm: Boolean;
+  protected
+    procedure InserirRegistro; override;
+    procedure ExcluirRegistro; override;
+  end;
+
+var
+  Marca: TMarca;
+
+implementation
+
+uses
+  System.Generics.Collections;
+
+{$R *.dfm}
+
+procedure TMarca.btnEditarClick(Sender: TObject);
+var
+  vMarcaGeneric: TControllerGenericCrud<TRegisterMarca>;
+  vMarca: TRegisterMarca;
+begin
+  inherited;
+  vMarcaGeneric := TControllerGenericCrud<TRegisterMarca>.Create
+    (TConnection.New.SetConnection, 'MARCA');
+
+  vMarca := TRegisterMarca.Create;
+  try
+    vMarca.ID_MARCA := StrToInt(edtCodigo.Text);
+    vMarca.DESCRICAO := edtMarca.Text;
+    vMarcaGeneric.Update(vMarca);
+
+    CarregarGrid;
+  finally
+    vMarca.Free;
+    vMarcaGeneric.Free;
+  end;
+end;
+
+procedure TMarca.CarregarGrid;
+var
+  vMarcaGeneric: TControllerGenericCrud<TRegisterMarca>;
+  vMarca: TRegisterMarca;
+  vMarcas: TObjectList<TRegisterMarca>;
+begin
+  inherited;
+  vMarcaGeneric := TControllerGenericCrud<TRegisterMarca>.Create
+    (TConnection.New.SetConnection, 'MARCA');
+
+  vMarcas := TObjectList<TRegisterMarca>.Create;
+  try
+    vMarcas := vMarcaGeneric.ListarTodos;
+
+    cdsMarca.Close;
+    cdsMarca.FieldDefs.Clear;
+    cdsMarca.FieldDefs.Add('ID_MARCA', ftInteger);
+    cdsMarca.FieldDefs.Add('DESCRICAO', ftString, 100);
+    cdsMarca.CreateDataSet;
+
+    for vMarca in vMarcas do
+    begin
+      cdsMarca.Append;
+      cdsMarca.FieldByName('ID_MARCA').AsInteger := vMarca.ID_MARCA;
+      cdsMarca.FieldByName('DESCRICAO').AsString := vMarca.DESCRICAO;
+      cdsMarca.Post;
+    end;
+
+    cdsMarca.First;
+  finally
+    vMarcas.Free;
+    vMarcaGeneric.Free;
+  end;
+end;
+
+procedure TMarca.ExcluirRegistro;
+var
+  vMarcaGeneric: TControllerGenericCrud<TRegisterMarca>;
+  vMarca: TRegisterMarca;
+begin
+  inherited;
+  vMarcaGeneric := TControllerGenericCrud<TRegisterMarca>.Create
+    (TConnection.New.SetConnection, 'MARCA');
+
+  vMarca := TRegisterMarca.Create;
+  try
+    vMarca.ID_MARCA := StrToInt(edtCodigo.Text);
+    vMarca.DESCRICAO := edtMarca.Text;
+    vMarcaGeneric.Delete(vMarca);
+
+    CarregarGrid;
+  finally
+    vMarca.Free;
+    vMarcaGeneric.Free;
+  end;
+end;
+
+procedure TMarca.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  inherited;
+  ModalResult := mrOk;
+end;
+
+procedure TMarca.FormShow(Sender: TObject);
+begin
+  CarregarGrid;
+end;
+
+procedure TMarca.InserirRegistro;
+var
+  vMarcaGeneric: TControllerGenericCrud<TRegisterMarca>;
+  vMarca: TRegisterMarca;
+begin
+  inherited;
+  vMarcaGeneric := TControllerGenericCrud<TRegisterMarca>.Create
+    (TConnection.New.SetConnection, 'MARCA');
+
+  vMarca := TRegisterMarca.Create;
+  try
+    vMarca.ID_MARCA := StrToInt(edtCodigo.Text);
+    vMarca.DESCRICAO := edtMarca.Text;
+    vMarcaGeneric.Insert(vMarca);
+
+    CarregarGrid;
+  finally
+    vMarca.Free;
+    vMarcaGeneric.Free;
+  end;
+end;
+
+class function TMarca.ShowForm: Boolean;
+var
+  vForm: TMarca;
+begin
+  Result := False;
+  vForm := TMarca.Create(Application);
+  try
+    if vForm.ShowModal = mrOk then
+      Result := True;
+  finally
+    vForm.Free;
+  end;
+end;
+
+end.

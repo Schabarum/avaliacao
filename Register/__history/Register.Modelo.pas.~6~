@@ -1,0 +1,36 @@
+unit Register.Modelo;
+
+interface
+
+uses
+  Controller.GenericCrud;
+
+type
+  TRegisterModelo = class(TBaseEntity)
+  private
+    FID_MODELO: Integer;
+    FDESCRICAO: string;
+    procedure SetID_MODELO(const Value: Integer);
+    procedure SetDESCRICAO(const Value: string);
+
+  public
+    property ID_MODELO: Integer read FID_MODELO write SetID_MODELO;
+    property DESCRICAO: string read FDESCRICAO write SetDESCRICAO;
+    property Lancamento: TDateTime;
+  end;
+
+implementation
+
+{ TRegisterModelo }
+
+procedure TRegisterModelo.SetDESCRICAO(const Value: string);
+begin
+  FDESCRICAO := Value;
+end;
+
+procedure TRegisterModelo.SetID_MODELO(const Value: Integer);
+begin
+  FID_MODELO := Value;
+end;
+
+end.

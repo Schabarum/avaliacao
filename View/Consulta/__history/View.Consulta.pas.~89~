@@ -1,0 +1,197 @@
+unit View.Consulta;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, Controller.Connection,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Data.DB, Vcl.Grids,
+  Vcl.DBGrids, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param,
+  FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
+  FireDAC.Stan.Async, FireDAC.DApt, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
+  Vcl.StdCtrls, Controller.Fields;
+
+type
+  TTypeView = (tvMarea = 0, tvUno = 1, tvCliente = 2, tvSorteio = 3);
+
+  TViewConsulta = class(TForm)
+    Panel1: TPanel;
+    grdConsulta: TDBGrid;
+    FDConsulta: TFDQuery;
+    dsConsulta: TDataSource;
+    cbbVisualiza: TComboBox;
+    btnExcluirVendas: TButton;
+    procedure cbbVisualizaExit(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FDConsultaBeforeOpen(DataSet: TDataSet);
+    procedure btnExcluirVendasClick(Sender: TObject);
+  private
+    function GetSQLPadrao: string;
+  public
+    class function ShowForm: Boolean;
+  end;
+
+var
+  ViewConsulta: TViewConsulta;
+
+implementation
+
+{$R *.dfm}
+
+procedure TViewConsulta.btnExcluirVendasClick(Sender: TObject);
+const
+  cSQL =
+    'DELETE V' +
+    '  FROM VENDA V'+
+    '  LEFT JOIN (SELECT DISTINCT C.ID_CLIENTE'+
+    '               FROM VENDA   V'+
+    '               JOIN ITEM    I ON V.ID_VENDA   = I.ID_VENDA'+
+    '               JOIN CLIENTE C ON V.ID_CLIENTE = C.ID_CLIENTE'+
+    '               JOIN MODELO  M ON I.ID_MODELO  = M.ID_MODELO'+
+    '              WHERE C.CPF LIKE ''0%'''+
+    '                AND YEAR(M.LANCAMENTO) >= 2021'+
+    '                AND (SELECT COUNT(1)'+
+    '                       FROM VENDA V1'+
+    '                       JOIN ITEM I1 ON V1.ID_VENDA = I1.ID_VENDA'+
+    '                      WHERE I1.ID_MODELO = 1'+
+    '                        AND V1.ID_CLIENTE = C.ID_CLIENTE) < 2'+
+    '      ) AS CLIENTES_RELEVANTES'+
+    '    ON V.ID_CLIENTE = CLIENTES_RELEVANTES.ID_CLIENTE'+
+    ' WHERE CLIENTES_RELEVANTES.ID_CLIENTE IS NULL;';
+var
+  vQuery: TFDQuery;
+begin
+  vQuery := TFDQuery.Create(nil);
+  try
+    vQuery.Connection := TConnection.New.SetConnection;
+
+  finally
+    vQuery.Free;
+  end;
+end;
+
+procedure TViewConsulta.cbbVisualizaExit(Sender: TObject);
+begin
+  btnExcluirVendas.Enabled := TTypeView(cbbVisualiza.ItemIndex) = tvSorteio;
+  FDConsulta.SQL.Text := GetSQLPadrao;
+  FDConsulta.Open;
+end;
+
+procedure TViewConsulta.FDConsultaBeforeOpen(DataSet: TDataSet);
+begin
+  if TTypeView(cbbVisualiza) = tvMarea then
+  begin
+    TControllerFields.New(grdConsulta)
+      .SetColumn('ID_MODELO', 'ID modelo', 10)
+      .SetColumn('DESCRICAO', 'Nome do veiculo', 40)
+      .SetColumn('QUANTIDADE', 'Quantidade', 10);
+  end
+  else if TTypeView(cbbVisualiza) = tvUno then
+  begin
+    TControllerFields.New(grdConsulta)
+      .SetColumn('ID_CLIENTE', 'ID cliente', 10)
+      .SetColumn('NOME', 'Nome do cliente', 40)
+      .SetColumn('CPF', 'CPF', 20)
+      .SetColumn('ID_MODELO', 'ID modelo', 10)
+      .SetColumn('DESCRICAO', 'Nome do modelo', 40)
+      .SetColumn('QUANTIDADE', 'Quantidade', 10)
+      .SetColumn('VL_ITEM', 'Vl. Item', 10);
+  end
+  else if TTypeView(cbbVisualiza.ItemIndex) = tvCliente then
+  begin
+    TControllerFields.New(grdConsulta)
+      .SetColumn('ID_CLIENTE', 'ID cliente', 10)
+      .SetColumn('NOME', 'Nome do cliente', 40)
+      .SetColumn('CPF', 'CPF', 20)
+  end
+  else if TTypeView(cbbVisualiza.ItemIndex) = tvSorteio then
+  begin
+    TControllerFields.New(grdConsulta)
+      .SetColumn('ID_CLIENTE', 'ID cliente', 10)
+      .SetColumn('NOME', 'Nome do cliente', 40)
+      .SetColumn('CPF', 'CPF', 20)
+      .SetColumn('DATA_VENDA', 'Data da venda', 10)
+  end;
+end;
+
+procedure TViewConsulta.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  ModalResult := mrOk;
+end;
+
+procedure TViewConsulta.FormShow(Sender: TObject);
+begin
+  FDConsulta.Connection := TConnection.New.SetConnection;
+end;
+
+function TViewConsulta.GetSQLPadrao: string;
+const
+  cSQLMarea =
+    'SELECT M.ID_MODELO, M.DESCRICAO, SUM(I.QUANTIDADE) QUANTIDADE' +
+    '  FROM VENDA  V ' +
+    '  JOIN ITEM	 I ON V.ID_VENDA  = I.ID_VENDA ' +
+    '  JOIN MODELO M ON I.ID_MODELO = M.ID_MODELO ' +
+    ' WHERE M.ID_MODELO = 1 ' +
+    ' GROUP BY M.ID_MODELO, M.DESCRICAO';
+
+  cSQLUno =
+    'SELECT C.ID_CLIENTE, C.NOME, C.CPF, M.ID_MODELO, M.DESCRICAO,' +
+    '       SUM(I.QUANTIDADE) QUANTIDADE, SUM(I.VL_ITEM) VL_ITEM' +
+    '  FROM VENDA   V' +
+    '  JOIN ITEM    I ON V.ID_VENDA   = I.ID_VENDA' +
+    '  JOIN MODELO  M ON I.ID_MODELO  = M.ID_MODELO' +
+    '  JOIN CLIENTE C ON V.ID_CLIENTE = C.ID_CLIENTE' +
+    ' WHERE M.ID_MODELO = 2' +
+    ' GROUP BY C.ID_CLIENTE, C.NOME, C.CPF, M.ID_MODELO, M.DESCRICAO';
+
+  cSQLCliente =
+    'SELECT ID_CLIENTE, NOME, CPF' +
+    '  FROM CLIENTE C' +
+    ' WHERE NOT EXISTS (SELECT 1' +
+    '	                		FROM VENDA V' +
+    ' 			             WHERE V.ID_CLIENTE = C.ID_CLIENTE)';
+
+  cSQLSorteio =
+    'SELECT C.ID_CLIENTE, C.NOME, C.CPF, MAX(V.DATA_VENDA) DATA_VENDA' +
+    '  FROM VENDA   V' +
+    '  JOIN ITEM    I ON V.ID_VENDA   = I.ID_VENDA' +
+    '  JOIN CLIENTE C ON V.ID_CLIENTE = C.ID_CLIENTE' +
+    '  JOIN MODELO  M ON I.ID_MODELO  = M.ID_MODELO' +
+    ' WHERE C.CPF LIKE ''0%''' +
+    '   AND YEAR(M.LANCAMENTO) >= 2021' +
+    '   AND (SELECT COUNT(1)' +
+    '          FROM VENDA V1' +
+    '          JOIN ITEM I1 ON V1.ID_VENDA = I1.ID_VENDA' +
+    '         WHERE I1.ID_MODELO  = 1' +
+    '           AND V1.ID_CLIENTE = C.ID_CLIENTE) < 2' +
+    ' GROUP BY C.ID_CLIENTE, C.NOME, C.CPF' +
+    ' ORDER BY MAX(V.DATA_VENDA) DESC' +
+    ' LIMIT 15';
+begin
+  Result := EmptyStr;
+  if TTypeView(cbbVisualiza.ItemIndex) = tvMarea then
+    Result := cSQLMarea
+  else if TTypeView(cbbVisualiza.ItemIndex) = tvUno then
+    Result := cSQLUno
+  else if TTypeView(cbbVisualiza.ItemIndex) = tvCliente then
+    Result := cSQLCliente
+  else if TTypeView(cbbVisualiza.ItemIndex) = tvSorteio then
+    Result := cSQLSorteio;
+end;
+
+class function TViewConsulta.ShowForm: Boolean;
+var
+  vForm: TViewConsulta;
+begin
+  Result := False;
+  vForm := TViewConsulta.Create(Application);
+  try
+    if vForm.ShowModal = mrOk then
+      Result := True;
+  finally
+    vForm.Free;
+  end;
+end;
+
+end.

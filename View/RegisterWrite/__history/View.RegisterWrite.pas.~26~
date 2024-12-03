@@ -1,0 +1,65 @@
+unit View.RegisterWrite;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls,
+  System.ImageList, Vcl.ImgList;
+
+type
+  TViewRegisterWrite = class(TForm)
+    pnlBackGround: TPanel;
+    pnlToolbar: TPanel;
+    btnInserir: TButton;
+    btnEditar: TButton;
+    btnExcluir: TButton;
+    procedure btnInserirClick(Sender: TObject);
+    procedure btnEditarClick(Sender: TObject);
+    procedure btnExcluirClick(Sender: TObject);
+  protected
+    procedure InserirRegistro; virtual;
+    procedure EditarRegistro; virtual;
+    procedure ExcluirRegistro; virtual;
+  end;
+
+var
+  ViewRegisterWrite: TViewRegisterWrite;
+
+implementation
+
+{$R *.dfm}
+{ TViewRegisterWrite }
+
+procedure TViewRegisterWrite.btnEditarClick(Sender: TObject);
+begin
+  EditarRegistro;
+end;
+
+procedure TViewRegisterWrite.btnExcluirClick(Sender: TObject);
+begin
+  ExcluirRegistro;
+end;
+
+procedure TViewRegisterWrite.btnInserirClick(Sender: TObject);
+begin
+  InserirRegistro;
+end;
+
+procedure TViewRegisterWrite.EditarRegistro;
+begin
+  //
+end;
+
+procedure TViewRegisterWrite.ExcluirRegistro;
+begin
+  //
+end;
+
+procedure TViewRegisterWrite.InserirRegistro;
+begin
+  //
+end;
+
+end.

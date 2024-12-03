@@ -1,0 +1,15 @@
+unit Register.Modelo;
+
+interface
+
+uses
+  Controller.GenericCrud;
+
+type
+  TRegisterModelo = class(TBaseEntity)
+
+  end;
+
+implementation
+
+end.

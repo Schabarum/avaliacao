@@ -1,0 +1,46 @@
+unit Controller.Crud;
+
+interface
+
+uses
+  FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Error, FireDAC.UI.Intf,
+  FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async,
+  FireDAC.Phys, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client;
+
+type
+  TControllerCrud = class
+  private
+    FDataSet: TFDQuery;
+    procedure Post: virtual;
+    procedure Delete: virtual;
+    procedure Update: virtual;
+  public
+    class function New: IControllerCrud;
+    constructor Create;
+  end;
+
+implementation
+
+{ TCrud }
+
+constructor TControllerCrud.Create;
+begin
+  inherited Create;
+end;
+
+function TControllerCrud.Delete;
+begin
+  FDataSet.Delete;
+end;
+
+function TControllerCrud.Post;
+begin
+  FDataSet.Post;
+end;
+
+function TControllerCrud.Update;
+begin
+  //
+end;
+
+end.

@@ -1,0 +1,10 @@
+unit Register.Venda;
+
+interface
+
+uses
+  Controller.GenericCrud;
+
+implementation
+
+end.

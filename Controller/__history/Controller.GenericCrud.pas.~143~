@@ -1,0 +1,252 @@
+unit Controller.GenericCrud;
+
+interface
+
+uses
+  System.Generics.Collections, Data.DB, FireDAC.Comp.Client, System.Rtti,
+  System.SysUtils, System.TypInfo, FireDAC.DApt;
+
+type
+  TBaseEntity = class
+  public
+    Id: Integer;
+  end;
+
+  TControllerGenericCrud<T: TBaseEntity, constructor> = class
+  private
+    FConnection: TFDConnection;
+    FTableName: string;
+  public
+    constructor Create(AConnection: TFDConnection; ATableName: string);
+    function ListarTodos: TObjectList<T>;
+    procedure Insert(AEntity: T);
+    procedure Update(AEntity: T);
+    procedure Delete(AEntity: T);
+  end;
+
+implementation
+
+{ TControllerGenericCrud<T> }
+
+constructor TControllerGenericCrud<T>.Create(AConnection: TFDConnection;
+  ATableName: string);
+begin
+  FConnection := AConnection;
+  FTableName := ATableName;
+end;
+
+procedure TControllerGenericCrud<T>.Delete(AEntity: T);
+const
+  cSQL = 'DELETE FROM %0:s WHERE %1:s = %2:s';
+var
+  vContextRTTI: TRttiContext;
+  vEntetyType: TRttiType;
+  vProperty: TRttiProperty;
+  vQuery: TFDQuery;
+begin
+  vQuery := TFDQuery.Create(nil);
+  try
+    if (FConnection = nil) or (not FConnection.Connected) then
+      raise Exception.Create('Conexão com o banco de dados não está ativa.');
+
+    vQuery.Connection := FConnection;
+
+    vContextRTTI := TRttiContext.Create;
+    try
+      vEntetyType := vContextRTTI.GetType(AEntity.ClassType);
+      for vProperty in vEntetyType.GetProperties do
+      begin
+        if vProperty.Visibility = mvPublic then
+        begin
+          if Pos(LowerCase('ID_'), LowerCase(vProperty.Name)) = 1 then
+          begin
+            vQuery.SQL.Text :=
+              Format(cSQL, [FTableName, vProperty.Name,
+              vProperty.GetValue(TObject(AEntity)).AsVariant]);
+          end;
+        end;
+      end;
+    finally
+      vContextRTTI.Free;
+    end;
+
+    vQuery.ExecSQL;
+  finally
+    vQuery.Free;
+  end;
+end;
+
+procedure TControllerGenericCrud<T>.Insert(AEntity: T);
+const
+  cSQL = 'INSERT INTO %0:s (%1:s) VALUES (%2:s)';
+var
+  vContextRTTI: TRttiContext;
+  vEntetyType: TRttiType;
+  vProperty: TRttiProperty;
+  vNameField, vNameParameter: string;
+  vQuery: TFDQuery;
+begin
+  vQuery := TFDQuery.Create(nil);
+  try
+    if (FConnection = nil) or (not FConnection.Connected) then
+      raise Exception.Create('Conexão com o banco de dados não está ativa.');
+
+    vQuery.Connection := FConnection;
+
+    vContextRTTI := TRttiContext.Create;
+    try
+      vEntetyType := vContextRTTI.GetType(AEntity.ClassType);
+      vNameField := EmptyStr;
+      vNameParameter := EmptyStr;
+
+      for vProperty in vEntetyType.GetProperties do
+      begin
+        if vProperty.Visibility = mvPublic then
+        begin
+          if vNameField <> EmptyStr then
+          begin
+            vNameField := vNameField + ', ';
+            vNameParameter := vNameParameter + ', ';
+          end;
+          vNameField := vNameField + vProperty.Name;
+          vNameParameter := vNameParameter + ':' + vProperty.Name;
+        end;
+      end;
+
+      vQuery.SQL.Text := Format(cSQL, [FTableName, vNameField, vNameParameter]);
+
+      for vProperty in vEntetyType.GetProperties do
+      begin
+        if vProperty.Visibility = mvPublic then
+        begin
+          vQuery.ParamByName(vProperty.Name).Value :=
+            vProperty.GetValue(TObject(AEntity)).AsVariant;
+        end;
+      end;
+
+      vQuery.ExecSQL;
+    finally
+      vContextRTTI.Free;
+    end;
+  finally
+    vQuery.Free;
+  end;
+end;
+
+function TControllerGenericCrud<T>.ListarTodos: TObjectList<T>;
+const
+  cSQL = 'SELECT * FROM %0:s';
+var
+  vQuery: TFDQuery;
+  vEntidade: T;
+  vLista: TObjectList<T>;
+  vContextRTTI: TRttiContext;
+  vTypeRTTI: TRttiType;
+  vPropertyRTTI: TRttiProperty;
+  vFieldName: string;
+begin
+  vLista := TObjectList<T>.Create(True);
+  vQuery := TFDQuery.Create(nil);
+  try
+    vQuery.Connection := FConnection;
+    vQuery.SQL.Text := Format(cSQL, [FTableName]);
+    vQuery.Open;
+
+    vContextRTTI := TRttiContext.Create;
+    try
+      vTypeRTTI := vContextRTTI.GetType(TClass(T));
+
+      while not vQuery.Eof do
+      begin
+        vEntidade := T.Create;
+        for vPropertyRTTI in vTypeRTTI.GetProperties do
+        begin
+          if vPropertyRTTI.Visibility = mvPublic then
+          begin
+            vFieldName := vPropertyRTTI.Name;
+
+            if vQuery.FindField(vFieldName) <> nil then
+            begin
+              case vPropertyRTTI.PropertyType.TypeKind of
+                tkInteger:
+                  vPropertyRTTI.SetValue(TObject(vEntidade),
+                    vQuery.FieldByName(vFieldName).AsInteger);
+                tkFloat:
+                  if vPropertyRTTI.PropertyType.Name = 'TDateTime' then
+                    vPropertyRTTI.SetValue(TObject(vEntidade),
+                      vQuery.FieldByName(vFieldName).AsDateTime)
+                  else
+                    vPropertyRTTI.SetValue(TObject(vEntidade),
+                      vQuery.FieldByName(vFieldName).AsFloat);
+                tkString, tkLString, tkWString, tkUString:
+                  vPropertyRTTI.SetValue(TObject(vEntidade),
+                    vQuery.FieldByName(vFieldName).AsString);
+              end;
+            end;
+          end;
+        end;
+
+        vLista.Add(vEntidade);
+        vQuery.Next;
+      end;
+
+      Result := vLista;
+    finally
+      vContextRTTI.Free;
+    end;
+  finally
+    vQuery.Free;
+  end;
+end;
+
+procedure TControllerGenericCrud<T>.Update(AEntity: T);
+const
+  cSQL = 'UPDATE %0:s SET %1:s WHERE %2:s';
+var
+  vQuery: TFDQuery;
+  vContextRTTI: TRttiContext;
+  vEntetyType: TRttiType;
+  vProperty: TRttiProperty;
+  vSet, vWhere: string;
+begin
+  vQuery := TFDQuery.Create(nil);
+  try
+    vQuery.Connection := FConnection;
+    vQuery.SQL.Text := Format(cSQL, [FTableName]);
+    vContextRTTI := TRttiContext.Create;
+    try
+      vEntetyType := vContextRTTI.GetType(AEntity.ClassType);
+      for vProperty in vEntetyType.GetProperties do
+      begin
+        if vProperty.Visibility = mvPublic then
+        begin
+          if Pos(LowerCase('ID_'), LowerCase(vProperty.Name)) = 1 then
+          begin
+            if vWhere <> EmptyStr then
+              vWhere := vWhere + ' AND ';
+
+            vWhere := vWhere + vProperty.Name + ' = ' +
+              vProperty.GetValue(TObject(AEntity)).AsVariant;
+          end
+          else
+          begin
+            if vSet <> EmptyStr then
+              vSet := vSet + ', ';
+
+            vSet := vSet + vProperty.Name + ' = ' +
+              vProperty.GetValue(TObject(AEntity)).AsVariant;
+          end;
+        end;
+      end;
+    finally
+      vContextRTTI.Free;
+    end;
+
+    vQuery.SQL.Text := Format(cSQL, [FTableName, vSet, vWhere]);
+    vQuery.ExecSQL;
+  finally
+    vQuery.Free;
+  end;
+end;
+
+end.

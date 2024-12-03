@@ -1,0 +1,60 @@
+unit Controller.Crud;
+
+interface
+
+uses
+  FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Error, FireDAC.UI.Intf,
+  FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async,
+  FireDAC.Phys, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client;
+
+type
+  IControllerCrud = interface
+    ['{F03966D1-8D5D-4E66-8C52-8699E81010D7}']
+    function Post: IControllerCrud;
+    function Delete: IControllerCrud;
+    function Update: IControllerCrud;
+  end;
+
+  TControllerCrud = class(TInterfacedObject, IControllerCrud)
+  private
+    FDataSet: TFDQuery;
+    function Post: IControllerCrud;
+    function Delete: IControllerCrud;
+    function Update: IControllerCrud;
+  public
+    class function New: IControllerCrud;
+    constructor Create;
+  end;
+
+implementation
+
+{ TCrud }
+
+constructor TControllerCrud.Create;
+begin
+  inherited Create;
+end;
+
+function TControllerCrud.Delete: IControllerCrud;
+begin
+  FDataSet.Delete;
+  Result := Self;
+end;
+
+class function TControllerCrud.New: IControllerCrud;
+begin
+  Result := TControllerCrud.Create;
+end;
+
+function TControllerCrud.Post: IControllerCrud;
+begin
+  FDataSet.Post;
+  Result := Self;
+end;
+
+function TControllerCrud.Update: IControllerCrud;
+begin
+  Result := Self;
+end;
+
+end.

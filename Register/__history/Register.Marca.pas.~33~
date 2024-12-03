@@ -1,0 +1,35 @@
+unit Register.Marca;
+
+interface
+
+uses
+  Controller.GenericCrud;
+
+type
+  TRegisterMarca = class(TBaseEntity)
+  private
+    FID_MARCA: Integer;
+    FNome: string;
+    FCPF: string;
+    procedure SetID_MARCA(const Value: Integer);
+    procedure SetNome(const Value: string);
+  public
+    property ID_MARCA: Integer read FID_MARCA write SetID_MARCA;
+    property Nome: string read FNome write SetNome;
+  end;
+
+implementation
+
+{ TRegisterMarca }
+
+procedure TRegisterMarca.SetID_MARCA(const Value: Integer);
+begin
+  FID_MARCA := Value;
+end;
+
+procedure TRegisterMarca.SetNome(const Value: string);
+begin
+  FNome := Value;
+end;
+
+end.

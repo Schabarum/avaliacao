@@ -1,0 +1,15 @@
+unit Register.Item;
+
+interface
+
+uses
+  Controller.GenericCrud;
+
+type
+  TRegisterItem = class(TBaseEntity)
+
+  end;
+
+implementation
+
+end.

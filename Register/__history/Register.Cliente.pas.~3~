@@ -1,0 +1,19 @@
+unit Register.Cliente;
+
+interface
+
+uses
+  Controller.GenericCrud;
+
+type
+  TRegisterCliente = class(TBaseEntity)
+  private
+  public
+    property ID_CLIENTE: Integer;
+    property NOME: string;
+    property CPF: string;
+  end;
+
+implementation
+
+end.

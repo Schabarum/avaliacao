@@ -1,0 +1,92 @@
+inherited Modelo: TModelo
+  Caption = 'Cadastro de Modelo'
+  StyleElements = [seFont, seClient, seBorder]
+  TextHeight = 15
+  inherited pnlBackGround: TPanel
+    StyleElements = [seFont, seClient, seBorder]
+    object lblModelo: TLabel
+      Left = 24
+      Top = 11
+      Width = 55
+      Height = 15
+      Caption = 'ID Modelo'
+    end
+    object lblDescricao: TLabel
+      Left = 151
+      Top = 11
+      Width = 51
+      Height = 15
+      Caption = 'Descri'#231#227'o'
+    end
+    object lblLancamento: TLabel
+      Left = 278
+      Top = 11
+      Width = 66
+      Height = 15
+      Caption = 'Lan'#231'amento'
+    end
+    object lblMarca: TLabel
+      Left = 405
+      Top = 11
+      Width = 47
+      Height = 15
+      Caption = 'ID Marca'
+    end
+    object grdModelo: TDBGrid
+      Left = 0
+      Top = 72
+      Width = 624
+      Height = 311
+      Align = alBottom
+      DataSource = dsModelo
+      TabOrder = 0
+      TitleFont.Charset = DEFAULT_CHARSET
+      TitleFont.Color = clWindowText
+      TitleFont.Height = -12
+      TitleFont.Name = 'Segoe UI'
+      TitleFont.Style = []
+    end
+    object edtModelo: TDBEdit
+      Left = 24
+      Top = 32
+      Width = 121
+      Height = 23
+      TabOrder = 1
+    end
+    object edtDescricao: TDBEdit
+      Left = 151
+      Top = 32
+      Width = 121
+      Height = 23
+      TabOrder = 2
+    end
+    object edtLancamento: TDBEdit
+      Left = 278
+      Top = 32
+      Width = 121
+      Height = 23
+      TabOrder = 3
+    end
+    object DBEdit4: TDBEdit
+      Left = 405
+      Top = 32
+      Width = 121
+      Height = 23
+      TabOrder = 4
+    end
+  end
+  inherited pnlToolbar: TPanel
+    StyleElements = [seFont, seClient, seBorder]
+  end
+  object dsModelo: TDataSource
+    DataSet = cdsModelo
+    Left = 424
+    Top = 282
+  end
+  object cdsModelo: TClientDataSet
+    Aggregates = <>
+    Params = <>
+    Left = 496
+    Top = 282
+  end
+end
