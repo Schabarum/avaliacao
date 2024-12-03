@@ -17,10 +17,10 @@ Um sistema desenvolvido em Delphi, utilizando o banco de dados MySQL.
 - Conexão eficiente com banco de dados MySQL.
 
 ## Pré-requisitos
-- **Delphi**: Versão 12.
-- **MySQL**: Versão 8.
+- **Delphi**: Versão 12 CE.
+- **MySQL**: Versão 8 CE.
 
 ## Instalação
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/Schabarum/avaliacao.git
+   git clone https://github.com/Schabarum/avaliacao.git prjQuestor
